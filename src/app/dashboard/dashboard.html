@@ -1,0 +1,136 @@
+<div class="dashboard-container">
+
+  <header class="top-header">
+    <div class="logo">Clínica Veterinária</div>
+    <nav class="top-menu">
+      <ul>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#pets">Pets</a></li>
+        <li><a href="#consultas">Consultas</a></li>
+        <li><a href="#notificacoes">Notificações</a></li>
+        <li><a href="#relatorios">Relatórios</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">{{ title }}</h1>
+
+    <section class="stats-cards">
+      @for (stat of stats | keyvalue; track stat.key) {
+        <div class="card">
+          <h3>
+            @switch (stat.key) {
+              @case ('appointmentsToday') { Consultas Hoje }
+              @case ('availableSlots') { Vagas Disponíveis }
+              @case ('totalOwners') { Total de Donos }
+              @case ('totalPets') { Total de Pets }
+            }
+          </h3>
+          <p>{{ stat.value }}</p>
+        </div>
+      }
+    </section>
+
+    <section class="notifications">
+      <h2>Notificações</h2>
+      @if (notifications.length > 0) {
+        <ul>
+          @for (n of notifications; track n.message) {
+            <li>{{ n.message }} - <em>{{ n.date | date:'short' }}</em></li>
+          }
+        </ul>
+        <button (click)="clearNotifications()">Limpar Notificações</button>
+      } @else {
+        <p>Nenhuma notificação por enquanto.</p>
+      }
+    </section>
+
+    <section class="tables">
+
+      <div class="table-card">
+        <h2>Pets Recentes</h2>
+        <button (click)="showAddPetForm = !showAddPetForm">Adicionar Novo Pet</button>
+
+        @if (showAddPetForm) {
+          <form class="pet-form" (ngSubmit)="addPet()">
+            <input type="text" [(ngModel)]="newPet.name" name="petName" placeholder="Nome do Pet" required>
+            <input type="text" [(ngModel)]="newPet.species" name="petSpecies" placeholder="Espécie" required>
+            <input type="text" [(ngModel)]="newPet.owner" name="petOwner" placeholder="Nome do Dono" required>
+            <button type="submit">Cadastrar Pet</button>
+          </form>
+        }
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Espécie</th>
+              <th>Dono</th>
+              <th>Última Visita</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pet of pets; track pet.name) {
+              <tr>
+                <td>{{ pet.name }}</td>
+                <td>{{ pet.species }}</td>
+                <td>{{ pet.owner }}</td>
+                <td>{{ pet.lastVisit | date:'shortDate' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <h2>Próximas Consultas</h2>
+
+        <form class="appointment-form" (ngSubmit)="saveAppointment()">
+          <select [(ngModel)]="newAppointment.pet" name="pet" required>
+            <option value="" disabled selected>Escolha o Pet</option>
+            @for (pet of pets; track pet.name) {
+              <option [value]="pet.name">{{ pet.name }}</option>
+            }
+          </select>
+          <input type="date" [(ngModel)]="newAppointment.date" name="date" required>
+          <input type="time" [(ngModel)]="newAppointment.time" name="time" required>
+          <input type="text" [(ngModel)]="newAppointment.vet" name="vet" placeholder="Veterinário" required>
+          <button type="submit">
+            @if (editIndex !== null) {
+              <span>Editar Consulta</span>
+            } @else {
+              <span>Adicionar Consulta</span>
+            }
+          </button>
+        </form>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Pet</th>
+              <th>Data</th>
+              <th>Horário</th>
+              <th>Veterinário</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (appt of appointments; track $index) {
+              <tr>
+                <td>{{ appt.pet }}</td>
+                <td>{{ appt.date | date:'shortDate' }}</td>
+                <td>{{ appt.time }}</td>
+                <td>{{ appt.vet }}</td>
+                <td>
+                  <button (click)="editAppointment($index)">Editar</button>
+                  <button (click)="deleteAppointment($index)">Excluir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
